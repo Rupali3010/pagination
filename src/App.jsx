@@ -17,18 +17,23 @@ const App = () => {
       setState(res.data);
     });
   }, []);
+
   let handlePrev = () => {
     setPageNumber(pageNumber - 1);
   };
+
   let handlenext = () => {
     setPageNumber(pageNumber + 1);
   };
+
   let handleStart = () => {
     setPageNumber(0);
   };
+
   let handleLast = () => {
-    setPageNumber(20);
+    setPageNumber(19);
   };
+
   let displayUser = state
     .slice(pageVisited, pageVisited + userPerPage)
     .map(x => (
