@@ -1,83 +1,79 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import _, { take } from "lodash";
-
-const pageSize = 10;
+import axios from "axios";
+import ReactPaginate from "react-paginate";
+// import "./home.css";
 
 const App = () => {
-  let [post, setPost] = useState([]);
-  let [pagination, setPagination] = useState();
-  let [currentPage, setCurrentPage] = useState(1);
+  let [state, setState] = useState([]);
+  let [loading, setLoading] = useState(false);
+  let [pageNumber, setPageNumber] = useState(0);
+
+  let userPerPage = 10;
+  let pageVisited = pageNumber * userPerPage;
 
   useEffect(() => {
     axios.get("https://jsonplaceholder.typicode.com/todos").then(res => {
       console.log(res.data);
-      setPost(res.data);
-      setPagination(_(res.data).slice(0).take(pageSize).value());
+      setState(res.data);
     });
   }, []);
-
-  const pageCount = post ? Math.ceil(post.length / pageSize) : 0;
-  if (pageCount === 1) return null;
-  const pages = _.range(1, pageCount + 1);
-
-  const paginate = pageNo => {
-    setCurrentPage(pageNo);
-    const startIndex = (pageNo - 1) * pageSize;
-    const pagination = _(post).slice(startIndex).take(pageSize).value();
-    setPagination(pagination);
+  let handlePrev = () => {
+    setPageNumber(pageNumber - 1);
   };
+  let handlenext = () => {
+    setPageNumber(pageNumber + 1);
+  };
+  let handleStart = () => {
+    setPageNumber(0);
+  };
+  let handleLast = () => {
+    setPageNumber(20);
+  };
+  let displayUser = state
+    .slice(pageVisited, pageVisited + userPerPage)
+    .map(x => (
+      <tr key={x.id} className="bodyrow">
+        <td>{x.id}</td>
+        <td>{x.userId}</td>
+        <td>{x.title}</td>
+        <td>
+          <p className={x.completed ? "btn btn-success" : "btn btn-danger"}>
+            {x.completed ? "Yes" : "No"}
+          </p>
+        </td>
+      </tr>
+    ));
 
+  let pageCount = Math.ceil(state.length / userPerPage);
+
+  let changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
   return (
-    <div>
-      {!pagination ? (
-        "No page found"
+    <section className="paginationBlock">
+      {loading === true ? (
+        "loading...."
       ) : (
-        <table className="table table-striped table-dark">
+        <table className="table">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>User ID</th>
-              <th>Title</th>
-              <th>Completed</th>
+            <tr className="headRow">
+              <th>id</th>
+              <th>UserId</th>
+              <th>title</th>
+              <th>completed</th>
             </tr>
           </thead>
-          <tbody>
-            {pagination.map((todos, id) => (
-              <tr key={id}>
-                <td>{todos.id}</td>
-                <td>{todos.userId}</td>
-                <td>{todos.title}</td>
-                <td>
-                  <p
-                    className={
-                      todos.completed ? "btn btn-success" : "btn btn-danger"
-                    }
-                  >
-                    {todos.completed ? "True" : "False"}
-                  </p>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+
+          <tbody>{displayUser}</tbody>
         </table>
       )}
       <nav className="d-flex justify-content-center">
-        <ul className="pagination">
-          {pages.map(page => (
-            <li
-              className={
-                page === currentPage ? "page-item active" : "page-item"
-              }
-            >
-              <p className="page-link" onClick={() => paginate(page)}>
-                {page}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <button onClick={handlePrev}>previous</button>
+        <button onClick={handleStart}>start</button>
+        <button onClick={handleLast}>last</button>
+        <button onClick={handlenext}>next</button>
       </nav>
-    </div>
+    </section>
   );
 };
 
